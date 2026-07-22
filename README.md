@@ -64,7 +64,7 @@ Then open `http://127.0.0.1:1420`.
 2. Click the track lane at the frame you want to edit.
 3. Turn **Auto Key** on.
 4. Drag the selected joint or IK target in the viewport.
-5. Confirm that a key marker appears on the selected track at the active frame.
+5. Confirm the green **Key saved** state in the inspector and the enlarged amber key marker on the active frame. A short Auto Key confirmation also appears after the edit.
 
 ## Project data
 

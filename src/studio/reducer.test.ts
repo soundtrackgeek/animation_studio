@@ -21,6 +21,7 @@ describe("studio reducer", () => {
     state = studioReducer(state, { type: "move_bone", boneId: "foot-ik-near", x: 0.64, y: 0.94 });
     const key = state.project.clips[0].keyframes.find((item) => item.boneId === "foot-ik-near" && item.frame === 25);
     expect(key).toMatchObject({ x: 0.64, y: 0.94 });
+    expect(state.notice).toBe("Auto Key saved · Left Foot IK · frame 25");
   });
 
   it("keeps an already-selected IK target draggable when its hit area overlaps a nearby bone", () => {

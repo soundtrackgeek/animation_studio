@@ -2,6 +2,17 @@
 
 All notable changes to Graphite Forge are documented here.
 
+## [0.1.2] - 2026-07-22
+
+### Changed
+
+- Added explicit Auto Key confirmation in the inspector and transient status notice.
+- Raised and enlarged the active timeline key above the playhead so a newly created key cannot appear hidden.
+
+### Verified
+
+- Reproduced both numeric-field and pointer-drag Auto Key creation against the native Tauri WebView and confirmed the keys in rendered DOM and persisted project data.
+
 ## [0.1.1] - 2026-07-22
 
 ### Fixed

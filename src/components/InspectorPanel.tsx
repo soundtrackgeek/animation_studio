@@ -89,6 +89,9 @@ export function InspectorPanel({ state, selectedBone, dispatch, onExport }: Insp
 
   const leftConstraint = state.project.constraints.find((constraint) => constraint.id === "foot-plant-left")!;
   const animateMode = state.mode === "animate";
+  const currentKey = state.project.clips[0].keyframes.find(
+    (keyframe) => keyframe.boneId === selectedBone.id && keyframe.frame === state.currentFrame,
+  );
   return (
     <aside className="inspector-panel">
       <div className="inspector-title">
@@ -112,9 +115,12 @@ export function InspectorPanel({ state, selectedBone, dispatch, onExport }: Insp
       {animateMode ? (
         <section className="inspector-section">
           <h3>Keyframe</h3>
+          <div className={`key-status ${currentKey ? "saved" : ""}`} aria-live="polite">
+            <span /> {currentKey ? `Key saved at frame ${state.currentFrame}` : `No key at frame ${state.currentFrame}`}
+          </div>
           <div className="property-row"><span>Frame</span><NumberField value={state.currentFrame} step={1} onChange={(frame) => dispatch({ type: "set_frame", frame })} /></div>
           <div className="property-row"><span>Interpolation</span><select defaultValue="bezier"><option>Bezier</option><option>Linear</option><option>Stepped</option></select></div>
-          <button className="primary-action compact" type="button" onClick={() => dispatch({ type: "add_key", boneId: selectedBone.id })}>Set key at frame {state.currentFrame}</button>
+          <button className="primary-action compact" type="button" onClick={() => dispatch({ type: "add_key", boneId: selectedBone.id })}>{currentKey ? "Update" : "Set"} key at frame {state.currentFrame}</button>
         </section>
       ) : (
         <>

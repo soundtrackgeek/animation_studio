@@ -65,7 +65,11 @@ function changeBone(
   const project = updatedProject(state.project, { bones });
   if (!shouldRecord) return { ...state, project };
   const changedBone = bones.find((bone) => bone.id === boneId)!;
-  return { ...state, project: recordKeyframe({ ...state, project }, changedBone) };
+  return {
+    ...state,
+    project: recordKeyframe({ ...state, project }, changedBone),
+    notice: `Auto Key saved · ${changedBone.name} · frame ${state.currentFrame}`,
+  };
 }
 
 export function studioReducer(state: StudioState, action: StudioAction): StudioState {

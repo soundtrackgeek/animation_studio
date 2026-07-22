@@ -1095,6 +1095,7 @@ button.tree-row:hover {
 .timeline-key {
   position: absolute;
   top: 50%;
+  z-index: 6;
   width: 8px;
   height: 8px;
   padding: 0;
@@ -1110,6 +1111,46 @@ button.tree-row:hover {
   border-color: #e9feff;
   background: #6ee3ed;
   box-shadow: 0 0 0 3px rgba(53, 205, 220, 0.12);
+}
+
+.timeline-key.active {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+  background: #f2a450;
+  box-shadow: 0 0 0 4px rgba(242, 164, 80, 0.2);
+}
+
+.key-status {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0 9px;
+  border: 1px solid #2a3940;
+  border-radius: 4px;
+  color: #84959d;
+  background: #10181c;
+  font-size: 11px;
+}
+
+.key-status span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #53636b;
+}
+
+.key-status.saved {
+  border-color: #315f56;
+  color: #bce5d8;
+  background: #12241f;
+}
+
+.key-status.saved span {
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(93, 210, 168, 0.12);
 }
 
 .timeline-footer {
