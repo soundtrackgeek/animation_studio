@@ -34,6 +34,7 @@ function TimelineKey({ keyframe, duration, active, onClick }: { keyframe: Keyfra
 
 export function Timeline({ state, dispatch }: TimelineProps) {
   const clip = state.project.clips[0];
+  const autoKeyAvailable = state.mode === "animate";
   const rows = TIMELINE_BONE_IDS.map((id) => state.project.bones.find((bone) => bone.id === id)!).filter(Boolean);
   const frameMarks = Array.from({ length: 13 }, (_, index) => index * 5);
 
@@ -41,8 +42,14 @@ export function Timeline({ state, dispatch }: TimelineProps) {
     <section className={`timeline-panel ${state.mode === "prepare" ? "muted" : ""}`}>
       <header className="timeline-header">
         <strong>Dopesheet</strong>
-        <button type="button" className={`auto-key ${state.autoKey ? "on" : ""}`} onClick={() => dispatch({ type: "toggle_auto_key" })}>
-          <span /> Auto Key <small>{state.autoKey ? "ON" : "OFF"}</small>
+        <button
+          type="button"
+          className={`auto-key ${state.autoKey ? "on" : ""}`}
+          disabled={!autoKeyAvailable}
+          title={autoKeyAvailable ? "Automatically key transform edits" : "Switch to Animate to use Auto Key"}
+          onClick={() => dispatch({ type: "toggle_auto_key" })}
+        >
+          <span /> Auto Key <small>{state.autoKey ? "ON" : autoKeyAvailable ? "OFF" : "ANIMATE ONLY"}</small>
         </button>
         <GearSix size={14} />
       </header>

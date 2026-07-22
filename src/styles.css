@@ -977,6 +977,22 @@ button.tree-row:hover {
   background: #823f34;
 }
 
+.auto-key:disabled {
+  cursor: not-allowed;
+  color: #697a82;
+  background: #151d21;
+  opacity: 1;
+}
+
+.auto-key:disabled > span {
+  background: #53636b;
+}
+
+.auto-key:disabled small {
+  color: #7f9097;
+  background: #263138;
+}
+
 .timeline-grid {
   min-height: 0;
   display: grid;

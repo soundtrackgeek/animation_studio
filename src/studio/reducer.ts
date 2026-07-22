@@ -75,7 +75,12 @@ function changeBone(
 export function studioReducer(state: StudioState, action: StudioAction): StudioState {
   switch (action.type) {
     case "set_mode":
-      return { ...state, mode: action.mode, stressTest: action.mode === "rig" ? state.stressTest : false };
+      return {
+        ...state,
+        mode: action.mode,
+        autoKey: action.mode === "animate" ? state.autoKey : false,
+        stressTest: action.mode === "rig" ? state.stressTest : false,
+      };
     case "set_tool":
       return { ...state, tool: action.tool };
     case "select_bone":
@@ -99,7 +104,7 @@ export function studioReducer(state: StudioState, action: StudioAction): StudioS
     case "set_playing":
       return { ...state, isPlaying: action.playing };
     case "toggle_auto_key":
-      return { ...state, autoKey: !state.autoKey };
+      return state.mode === "animate" ? { ...state, autoKey: !state.autoKey } : { ...state, autoKey: false };
     case "set_zoom":
       return { ...state, zoom: Math.max(0.35, Math.min(1.4, action.zoom)) };
     case "set_stress_test":

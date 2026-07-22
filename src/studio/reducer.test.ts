@@ -30,6 +30,19 @@ describe("studio reducer", () => {
     expect(hit).toBe("foot-ik-near");
   });
 
+  it("never leaves Auto Key enabled outside the Animate workspace", () => {
+    let state = createInitialState();
+    state = studioReducer(state, { type: "set_mode", mode: "animate" });
+    state = studioReducer(state, { type: "toggle_auto_key" });
+    expect(state.autoKey).toBe(true);
+
+    state = studioReducer(state, { type: "set_mode", mode: "rig" });
+    expect(state.autoKey).toBe(false);
+
+    state = studioReducer(state, { type: "toggle_auto_key" });
+    expect(state.autoKey).toBe(false);
+  });
+
   it("switches between illustrated and pixel-safe rendering", () => {
     const state = createInitialState();
     const next = studioReducer(state, { type: "set_render_profile", profile: "pixel" });

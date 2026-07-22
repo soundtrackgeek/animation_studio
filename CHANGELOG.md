@@ -2,6 +2,13 @@
 
 All notable changes to Graphite Forge are documented here.
 
+## [0.1.3] - 2026-07-22
+
+### Fixed
+
+- Prevented Auto Key from remaining visibly enabled after leaving the Animate workspace.
+- Disabled and relabeled Auto Key in Rig and other non-animation workspaces, where transforms intentionally edit the rest pose.
+
 ## [0.1.2] - 2026-07-22
 
 ### Changed

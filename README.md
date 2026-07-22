@@ -66,6 +66,8 @@ Then open `http://127.0.0.1:1420`.
 4. Drag the selected joint or IK target in the viewport.
 5. Confirm the green **Key saved** state in the inspector and the enlarged amber key marker on the active frame. A short Auto Key confirmation also appears after the edit.
 
+Auto Key is available only in **Animate**. Moving joints in **Rig** edits the rest pose and does not create animation keys; leaving Animate automatically turns Auto Key off.
+
 ## Project data
 
 - `.gforge` stores the editable Graphite Forge project as versioned JSON.
