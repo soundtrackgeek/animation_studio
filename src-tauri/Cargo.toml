@@ -1,0 +1,27 @@
+[package]
+name = "graphite-forge-animation-studio"
+version = "0.1.0"
+description = "A focused side-view 2D sprite rigging and animation studio"
+authors = ["Graphite Forge contributors"]
+edition = "2021"
+
+[lib]
+name = "graphite_forge_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+base64 = "0.22"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
