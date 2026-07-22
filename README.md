@@ -53,10 +53,18 @@ Then open `http://127.0.0.1:1420`.
 | `E` | Rotate tool |
 | `B` | Bone tool |
 | `K` | Keyframe tool |
-| Drag a joint | Reposition the selected rig joint |
+| Drag a joint | Reposition the selected rig joint; Auto Key records the active animation frame |
 | `Space` | Play or pause the active clip |
 | Left / Right arrow | Step one frame |
 | `Ctrl+S` | Save the project |
+
+### Add an animation key
+
+1. Open **Animate** and select a timeline track.
+2. Click the track lane at the frame you want to edit.
+3. Turn **Auto Key** on.
+4. Drag the selected joint or IK target in the viewport.
+5. Confirm that a key marker appears on the selected track at the active frame.
 
 ## Project data
 

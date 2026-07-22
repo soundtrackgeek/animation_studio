@@ -498,26 +498,6 @@ button.tree-row:hover {
   background: rgba(15, 23, 28, 0.72);
 }
 
-.viewport-warning {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  border: 1px solid #67433d;
-  border-radius: 4px;
-  color: #e6b1a6;
-  background: #251b1b;
-  font-size: 12px;
-}
-
-.viewport-warning svg {
-  color: var(--coral);
-}
-
 .viewport-controls {
   position: absolute;
   right: 12px;
@@ -867,14 +847,6 @@ button.tree-row:hover {
 
 .readiness-row svg {
   color: var(--success);
-}
-
-.readiness-row.warning {
-  color: #d9a79d;
-}
-
-.readiness-row.warning svg {
-  color: var(--coral);
 }
 
 .export-recipe {

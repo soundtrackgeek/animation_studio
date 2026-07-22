@@ -81,14 +81,14 @@ export function studioReducer(state: StudioState, action: StudioAction): StudioS
         state,
         action.boneId,
         (bone) => ({ ...bone, x: action.x, y: action.y }),
-        Boolean(action.recordKey),
+        state.mode === "animate" && state.autoKey,
       );
     case "rotate_bone":
       return changeBone(
         state,
         action.boneId,
         (bone) => ({ ...bone, rotation: action.rotation }),
-        Boolean(action.recordKey),
+        state.mode === "animate" && state.autoKey,
       );
     case "set_frame":
       return { ...state, currentFrame: Math.max(0, Math.min(state.project.clips[0].duration, action.frame)) };

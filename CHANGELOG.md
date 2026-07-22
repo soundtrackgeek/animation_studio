@@ -2,6 +2,14 @@
 
 All notable changes to Graphite Forge are documented here.
 
+## [0.1.1] - 2026-07-22
+
+### Fixed
+
+- Made Auto Key derive from the reducer's current Animate state so dragging a target reliably records the active frame.
+- Prioritized the selected IK target during overlapping viewport hit tests.
+- Removed the incorrect hard-coded rear-forearm warning from the canvas and validation panels.
+
 ## [0.1.0] - 2026-07-22
 
 ### Added

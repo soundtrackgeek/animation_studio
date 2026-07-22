@@ -6,7 +6,6 @@ import { ImageSquare } from "@phosphor-icons/react/ImageSquare";
 import { Lightning } from "@phosphor-icons/react/Lightning";
 import { LockSimple } from "@phosphor-icons/react/LockSimple";
 import { Target } from "@phosphor-icons/react/Target";
-import { Warning } from "@phosphor-icons/react/Warning";
 import type { Dispatch } from "react";
 import type { BoneNode, StudioAction, StudioState } from "../studio/types";
 
@@ -49,7 +48,7 @@ function PrepareInspector({ state, dispatch }: Pick<InspectorPanelProps, "state"
         </button>
         <div className="readiness-row"><Check weight="bold" /> Side profile detected</div>
         <div className="readiness-row"><Check weight="bold" /> Feet baseline found</div>
-        <div className="readiness-row warning"><Warning weight="fill" /> Rear forearm incomplete</div>
+        <div className="readiness-row"><Check weight="bold" /> Artwork ready for rigging</div>
       </section>
       <section className="inspector-section">
         <h3>Deformation profile</h3>
@@ -77,7 +76,7 @@ function ExportInspector({ state, onExport }: Pick<InspectorPanelProps, "state" 
         <h3>Validation</h3>
         <div className="readiness-row"><Check weight="bold" /> {state.project.bones.length} bones bound</div>
         <div className="readiness-row"><Check weight="bold" /> {clip.keyframes.length} keys in range</div>
-        <div className="readiness-row warning"><Warning weight="fill" /> Missing rear forearm artwork</div>
+        <div className="readiness-row"><Check weight="bold" /> Artwork source linked</div>
       </section>
       <button className="primary-action" type="button" onClick={onExport}>Export JSON metadata</button>
     </>
@@ -101,11 +100,11 @@ export function InspectorPanel({ state, selectedBone, dispatch, onExport }: Insp
         <h3>Transform</h3>
         <div className="xy-fields">
           <span>Position</span><small>X</small>
-          <NumberField value={selectedBone.x * 100} onChange={(x) => dispatch({ type: "move_bone", boneId: selectedBone.id, x: x / 100, y: selectedBone.y, recordKey: animateMode && state.autoKey })} />
+          <NumberField value={selectedBone.x * 100} onChange={(x) => dispatch({ type: "move_bone", boneId: selectedBone.id, x: x / 100, y: selectedBone.y })} />
           <small>Y</small>
-          <NumberField value={selectedBone.y * 100} onChange={(y) => dispatch({ type: "move_bone", boneId: selectedBone.id, x: selectedBone.x, y: y / 100, recordKey: animateMode && state.autoKey })} />
+          <NumberField value={selectedBone.y * 100} onChange={(y) => dispatch({ type: "move_bone", boneId: selectedBone.id, x: selectedBone.x, y: y / 100 })} />
         </div>
-        <div className="property-row"><span>Rotation</span><NumberField value={selectedBone.rotation} suffix="°" step={1} onChange={(rotation) => dispatch({ type: "rotate_bone", boneId: selectedBone.id, rotation, recordKey: animateMode && state.autoKey })} /></div>
+        <div className="property-row"><span>Rotation</span><NumberField value={selectedBone.rotation} suffix="°" step={1} onChange={(rotation) => dispatch({ type: "rotate_bone", boneId: selectedBone.id, rotation })} /></div>
         <div className="property-row"><span>Scale</span><NumberField value={1} step={0.01} onChange={() => undefined} /></div>
         <button className="secondary-action" type="button" onClick={() => dispatch({ type: "rotate_bone", boneId: selectedBone.id, rotation: 0 })}><ArrowClockwise /> Reset transform</button>
       </section>

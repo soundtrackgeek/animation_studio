@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { findBoneAtPoint } from "./hitTest";
 import { createInitialState, studioReducer } from "./reducer";
 
 describe("studio reducer", () => {
@@ -14,11 +15,18 @@ describe("studio reducer", () => {
   it("records a key when a transform is edited with auto key enabled", () => {
     let state = createInitialState();
     state = studioReducer(state, { type: "set_mode", mode: "animate" });
+    state = studioReducer(state, { type: "select_bone", boneId: "foot-ik-near" });
+    state = studioReducer(state, { type: "set_frame", frame: 25 });
     state = studioReducer(state, { type: "toggle_auto_key" });
-    state = studioReducer(state, { type: "set_frame", frame: 22 });
-    state = studioReducer(state, { type: "move_bone", boneId: "foot-ik-near", x: 0.64, y: 0.94, recordKey: state.autoKey });
-    const key = state.project.clips[0].keyframes.find((item) => item.boneId === "foot-ik-near" && item.frame === 22);
+    state = studioReducer(state, { type: "move_bone", boneId: "foot-ik-near", x: 0.64, y: 0.94 });
+    const key = state.project.clips[0].keyframes.find((item) => item.boneId === "foot-ik-near" && item.frame === 25);
     expect(key).toMatchObject({ x: 0.64, y: 0.94 });
+  });
+
+  it("keeps an already-selected IK target draggable when its hit area overlaps a nearby bone", () => {
+    const state = createInitialState();
+    const hit = findBoneAtPoint(state.project.bones, "foot-ik-near", { x: 0, y: 0, width: 300, height: 600 }, 207, 570);
+    expect(hit).toBe("foot-ik-near");
   });
 
   it("switches between illustrated and pixel-safe rendering", () => {

@@ -2,9 +2,9 @@ import { CornersOut } from "@phosphor-icons/react/CornersOut";
 import { GridFour } from "@phosphor-icons/react/GridFour";
 import { MagnifyingGlassMinus } from "@phosphor-icons/react/MagnifyingGlassMinus";
 import { MagnifyingGlassPlus } from "@phosphor-icons/react/MagnifyingGlassPlus";
-import { Warning } from "@phosphor-icons/react/Warning";
 import type { Dispatch, PointerEvent as ReactPointerEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { findBoneAtPoint } from "../studio/hitTest";
 import type { BoneNode, StudioAction, StudioState } from "../studio/types";
 
 interface StudioCanvasProps {
@@ -230,15 +230,7 @@ export function StudioCanvas({ state, dispatch }: StudioCanvasProps) {
   }, [draw, state.stressTest]);
 
   const findBone = (x: number, y: number): string | null => {
-    const rect = drawRectRef.current;
-    let closest: { id: string; distance: number } | null = null;
-    for (const bone of state.project.bones) {
-      const boneX = rect.x + bone.x * rect.width;
-      const boneY = rect.y + bone.y * rect.height;
-      const distance = Math.hypot(boneX - x, boneY - y);
-      if (distance < 18 && (!closest || distance < closest.distance)) closest = { id: bone.id, distance };
-    }
-    return closest?.id ?? null;
+    return findBoneAtPoint(state.project.bones, state.selectedBoneId, drawRectRef.current, x, y);
   };
 
   const eventPoint = (event: ReactPointerEvent<HTMLCanvasElement>) => {
@@ -263,7 +255,7 @@ export function StudioCanvas({ state, dispatch }: StudioCanvasProps) {
     const rect = drawRectRef.current;
     const x = Math.max(0, Math.min(1, (point.x - rect.x) / rect.width));
     const y = Math.max(0, Math.min(1, (point.y - rect.y) / rect.height));
-    dispatch({ type: "move_bone", boneId, x, y, recordKey: state.mode === "animate" && state.autoKey });
+    dispatch({ type: "move_bone", boneId, x, y });
   };
 
   const onPointerUp = (event: ReactPointerEvent<HTMLCanvasElement>) => {
@@ -282,7 +274,6 @@ export function StudioCanvas({ state, dispatch }: StudioCanvasProps) {
         aria-label="Interactive character rig viewport"
       />
       {loading ? <div className="canvas-loading">Preparing artwork…</div> : null}
-      <div className="viewport-warning"><Warning weight="fill" /> Rear forearm artwork missing</div>
       <div className="viewport-controls">
         <button type="button" aria-label="Toggle grid"><GridFour /></button>
         <button type="button" aria-label="Frame all"><CornersOut /></button>

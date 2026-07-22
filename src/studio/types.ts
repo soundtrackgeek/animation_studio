@@ -82,8 +82,8 @@ export type StudioAction =
   | { type: "set_mode"; mode: WorkspaceMode }
   | { type: "set_tool"; tool: ToolId }
   | { type: "select_bone"; boneId: string }
-  | { type: "move_bone"; boneId: string; x: number; y: number; recordKey?: boolean }
-  | { type: "rotate_bone"; boneId: string; rotation: number; recordKey?: boolean }
+  | { type: "move_bone"; boneId: string; x: number; y: number }
+  | { type: "rotate_bone"; boneId: string; rotation: number }
   | { type: "set_frame"; frame: number }
   | { type: "set_playing"; playing: boolean }
   | { type: "toggle_auto_key" }
