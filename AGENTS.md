@@ -22,6 +22,12 @@
    - Create descriptive commit message following existing style
    - Push to remote repository with `git push`
 
-5. **Stop after a successful push**:
-   - Once `git push` succeeds, the task is done
-   - Do not wait for GitHub Actions, create or push a release tag, inspect workflow artifacts, or follow the release pipeline unless the user explicitly asks
+5. **Always push the matching version tag after a version bump**:
+   - Whenever the application version changes, create an annotated `vMAJOR.MINOR.PATCH` tag on the pushed version commit and push that tag
+   - This is mandatory without exception; a version bump is not complete until both the commit and its matching version tag are on the remote
+   - Never move or replace an existing version tag. Stop and report the conflict if the required tag already points to a different commit
+
+6. **Stop after all required pushes succeed**:
+   - For changes without a version bump, the task is done after the branch push succeeds
+   - For a version bump, the task is done only after both the branch and matching version tag pushes succeed
+   - Do not wait for GitHub Actions, inspect workflow artifacts, or otherwise follow the release pipeline unless the user explicitly asks
