@@ -64,6 +64,9 @@ jobs:
       - name: Verify static preview worker
         run: npm run test:sites
 
+      - name: Verify updater release metadata
+        run: npm run test:updater-release
+
       - name: Verify Rust formatting
         working-directory: src-tauri
         run: cargo fmt --check
@@ -77,28 +80,19 @@ jobs:
         run: cargo test --all-features
 
       - name: Build Windows installer
-        run: npm run tauri:build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: npm run tauri:build:release
 
-      - name: Create installer checksum
-        shell: pwsh
-        run: |
-          $installer = Get-ChildItem "src-tauri/target/release/bundle/nsis" -Filter "*-setup.exe" |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
-          if (-not $installer) {
-            throw "The Tauri build did not produce an NSIS setup executable."
-          }
-          $hash = (Get-FileHash -Algorithm SHA256 $installer.FullName).Hash.ToLowerInvariant()
-          "$hash  $($installer.Name)" |
-            Set-Content -NoNewline -Encoding utf8 "$($installer.FullName).sha256"
+      - name: Prepare signed updater assets
+        run: node scripts/prepare-updater-release.mjs
 
       - name: Upload Windows installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: graphite-forge-windows-${{ github.run_number }}-${{ github.sha }}
-          path: |
-            src-tauri/target/release/bundle/nsis/*-setup.exe
-            src-tauri/target/release/bundle/nsis/*-setup.exe.sha256
+          path: dist/release/*
           if-no-files-found: error
           retention-days: 14
 
@@ -113,7 +107,7 @@ jobs:
 
     steps:
       - name: Download verified installer
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: graphite-forge-windows-${{ github.run_number }}-${{ github.sha }}
           path: release-assets

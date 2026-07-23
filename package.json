@@ -1,6 +1,6 @@
 {
   "name": "graphite-forge-animation-studio",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,15 +10,19 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:sites": "node --test tests/sites-worker.test.mjs",
+    "test:updater-release": "node --test tests/updater-release.test.mjs",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build --bundles nsis",
+    "tauri:build:release": "tauri build --bundles nsis --config src-tauri/tauri.release.conf.json",
     "tauri:build:binary": "tauri build --no-bundle"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",
     "@tauri-apps/api": "2.11.1",
     "@tauri-apps/plugin-dialog": "2.7.2",
+    "@tauri-apps/plugin-process": "2.3.1",
+    "@tauri-apps/plugin-updater": "2.10.1",
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },

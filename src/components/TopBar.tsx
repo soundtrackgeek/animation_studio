@@ -20,6 +20,8 @@ interface TopBarProps {
   onOpen: () => void;
   onSave: () => void;
   onExport: () => void;
+  settingsOpen: boolean;
+  onSettings: () => void;
 }
 
 const MODES: Array<{ id: WorkspaceMode; label: string }> = [
@@ -29,7 +31,16 @@ const MODES: Array<{ id: WorkspaceMode; label: string }> = [
   { id: "export", label: "Export" },
 ];
 
-export function TopBar({ state, dispatch, onImport, onOpen, onSave, onExport }: TopBarProps) {
+export function TopBar({
+  state,
+  dispatch,
+  onImport,
+  onOpen,
+  onSave,
+  onExport,
+  settingsOpen,
+  onSettings,
+}: TopBarProps) {
   return (
     <header className="top-bar">
       <div className="brand-lockup">
@@ -77,7 +88,15 @@ export function TopBar({ state, dispatch, onImport, onOpen, onSave, onExport }: 
         <button type="button" aria-label="Redo" disabled><Redo /></button>
         <button type="button" aria-label="Export" onClick={onExport}><DownloadSimple /></button>
         <button type="button" aria-label="Help"><Question /></button>
-        <button type="button" aria-label="Settings"><GearSix /></button>
+        <button
+          type="button"
+          className={settingsOpen ? "active" : ""}
+          aria-label="Settings"
+          aria-expanded={settingsOpen}
+          onClick={onSettings}
+        >
+          <GearSix />
+        </button>
         <button type="button" aria-label="Main menu"><List /></button>
       </div>
     </header>

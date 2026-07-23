@@ -2,6 +2,21 @@
 
 All notable changes to Graphite Forge are documented here.
 
+## [0.3.0] - 2026-07-23
+
+### Added
+
+- Added automatic update checks when the installed app starts and at a configurable 5, 15, 30, or 60 minute interval.
+- Added update preferences and a manual check action to the top-bar settings menu.
+- Added a lower-right update prompt with download progress, signed in-app installation, and automatic restart.
+- Added updater release tests and generated `latest.json`, installer signatures, and stable release asset names.
+
+### Changed
+
+- Updated the Windows workflow to build signed updater artifacts while keeping operating-system code signing as a separate future step.
+- Updated GitHub artifact actions to their current Node.js runtimes.
+- Clarified the repository workflow so work ends after a successful push unless release follow-up is explicitly requested.
+
 ## [0.2.2] - 2026-07-23
 
 ### Added

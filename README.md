@@ -14,6 +14,7 @@ Graphite Forge is a focused desktop studio for fitting a side-view 2D sprite to 
 - Prepare, Rig, Animate, and Export workspaces
 - One Walk clip with key markers, frame stepping, playback, Auto Key, and a range test
 - Native `.gforge` project open/save and JSON metadata export through Tauri
+- Automatic signed update checks with an in-app download, install, and restart flow
 - Browser fallbacks for previewing the interface without the desktop shell
 
 Mesh generation, weight painting, AI auto-rigging, curve editing, physics, multiple characters, skins, and rendered sprite-sheet export are intentionally outside this release.
@@ -61,6 +62,18 @@ The installer:
 
 Development builds are not code-signed yet, so Windows may show a SmartScreen warning. Code signing will be added separately when a signing certificate is available.
 
+### In-app updates
+
+The installed app checks GitHub Releases when it opens and every five minutes by default. If a newer signed version is available, a notification appears in the lower-right corner. Choose **Update & restart** to download and install it without leaving Graphite Forge.
+
+Open the gear menu in the top bar to:
+
+- Check for an update manually
+- Turn automatic checks on or off
+- Change the interval to 5, 15, 30, or 60 minutes
+
+Choosing **Later** hides that version for the rest of the current session. Update packages are verified with the updater signing key before installation.
+
 To create the installer locally:
 
 ```powershell
@@ -69,6 +82,17 @@ npm run tauri:build
 ```
 
 The setup executable and its bundled files are written to `src-tauri/target/release/bundle/nsis`. To build only the unpackaged executable, use `npm run tauri:build:binary`.
+
+The ordinary local build does not require updater signing. A release build needs the private updater key and its password:
+
+```powershell
+$env:TAURI_SIGNING_PRIVATE_KEY = "C:\path\to\graphite-forge-updater.key"
+$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = Get-Content "C:\path\to\graphite-forge-updater.password" -Raw
+npm run tauri:build:release
+node scripts/prepare-updater-release.mjs
+```
+
+Keep the private key and password outside the repository and back them up securely. GitHub Actions reads them from the `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` repository secrets. The release build produces the installer signature and `latest.json` metadata required by the in-app updater.
 
 To publish a version after its version files and changelog are updated and committed:
 
@@ -115,12 +139,13 @@ Auto Key is available only in **Animate**. Moving joints in **Rig** edits the re
 ```powershell
 npm run check
 npm run test:sites
+npm run test:updater-release
 cargo test --manifest-path src-tauri/Cargo.toml
 npm run build
 npm run tauri:build
 ```
 
-`npm run tauri:build` creates the Windows NSIS setup executable. On every push, GitHub Actions runs the frontend and Rust checks, builds that installer, generates a SHA-256 checksum, and keeps both as a downloadable artifact for 14 days. Version tags additionally publish those verified files under GitHub Releases. The selected design, implementation evidence, and QA report live under [`docs/design`](docs/design) and [`design-qa.md`](design-qa.md).
+`npm run tauri:build` creates the Windows NSIS setup executable. On every push, GitHub Actions runs the frontend and Rust checks, builds the signed updater installer, generates its signature, update manifest, and SHA-256 checksum, and keeps them as a downloadable artifact for 14 days. Version tags additionally publish those verified files under GitHub Releases. The selected design, implementation evidence, and QA report live under [`docs/design`](docs/design) and [`design-qa.md`](design-qa.md).
 
 ## Next stage
 

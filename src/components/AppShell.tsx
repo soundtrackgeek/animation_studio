@@ -1,4 +1,4 @@
-import type { Dispatch } from "react";
+import { useCallback, useState, type Dispatch } from "react";
 import type { BoneNode, StudioAction, StudioState } from "../studio/types";
 import { HierarchyPanel } from "./HierarchyPanel";
 import { InspectorPanel } from "./InspectorPanel";
@@ -7,6 +7,7 @@ import { StudioCanvas } from "./StudioCanvas";
 import { Timeline } from "./Timeline";
 import { ToolRail } from "./ToolRail";
 import { TopBar } from "./TopBar";
+import { UpdateCenter } from "./UpdateCenter";
 
 interface AppShellProps {
   state: StudioState;
@@ -18,6 +19,9 @@ interface AppShellProps {
   onExport: () => void;
 }
 export function AppShell({ state, selectedBone, dispatch, onImport, onOpen, onSave, onExport }: AppShellProps) {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
+
   return (
     <main className="studio-shell">
       <TopBar
@@ -27,6 +31,8 @@ export function AppShell({ state, selectedBone, dispatch, onImport, onOpen, onSa
         onOpen={onOpen}
         onSave={onSave}
         onExport={onExport}
+        settingsOpen={settingsOpen}
+        onSettings={() => setSettingsOpen((open) => !open)}
       />
       <div className="studio-body">
         <ToolRail selected={state.tool} onSelect={(tool) => dispatch({ type: "set_tool", tool })} />
@@ -36,6 +42,7 @@ export function AppShell({ state, selectedBone, dispatch, onImport, onOpen, onSa
         <Timeline state={state} dispatch={dispatch} />
       </div>
       <StatusBar state={state} dispatch={dispatch} />
+      <UpdateCenter settingsOpen={settingsOpen} onCloseSettings={closeSettings} />
       {state.notice ? <div className="notice" role="status">{state.notice}</div> : null}
     </main>
   );
