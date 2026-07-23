@@ -1,6 +1,6 @@
 [package]
 name = "graphite-forge-animation-studio"
-version = "0.1.3"
+version = "0.2.0"
 description = "A focused side-view 2D sprite rigging and animation studio"
 authors = ["Graphite Forge contributors"]
 edition = "2021"

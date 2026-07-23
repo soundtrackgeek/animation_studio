@@ -1,10 +1,12 @@
 # Graphite Forge
 
-Graphite Forge is a focused desktop studio for fitting a side-view 2D sprite to a small humanoid rig, posing it, and authoring a first animation clip. Version 0.1.0 is deliberately narrow so the workflow can be shaped in stages.
+[![Windows Installer](https://github.com/soundtrackgeek/animation_studio/actions/workflows/windows-installer.yml/badge.svg)](https://github.com/soundtrackgeek/animation_studio/actions/workflows/windows-installer.yml)
+
+Graphite Forge is a focused desktop studio for fitting a side-view 2D sprite to a small humanoid rig, posing it, and authoring a first animation clip. The v0.x series is deliberately narrow so the workflow can be shaped in stages.
 
 ![Graphite Forge v0.1.0](docs/design/implementation-v0.1.0-final.png)
 
-## What v0.1.0 includes
+## Current v0.x scope
 
 - One side-view humanoid project using the supplied Stellar Merc artwork
 - Hierarchy selection and direct joint dragging on the canvas
@@ -27,7 +29,7 @@ Requirements:
 Install dependencies:
 
 ```powershell
-npm install
+npm ci
 ```
 
 Run the desktop application:
@@ -43,6 +45,28 @@ npm run dev
 ```
 
 Then open `http://127.0.0.1:1420`.
+
+## Install the Windows app
+
+Every push is verified and packaged by the **Windows Installer** workflow in GitHub Actions. Open the latest successful workflow run, download the `graphite-forge-windows-...` artifact, unzip it, and run the included `Graphite Forge_..._x64-setup.exe`.
+
+The installer:
+
+- Installs for the current Windows user without requiring administrator access
+- Adds a Start menu shortcut and a standard Windows uninstaller
+- Includes the Microsoft WebView2 bootstrapper for dependable first-time setup
+- Prevents an older Graphite Forge build from replacing a newer installed version
+
+Development builds are not code-signed yet, so Windows may show a SmartScreen warning. Code signing will be added separately when a signing certificate is available.
+
+To create the installer locally:
+
+```powershell
+npm ci
+npm run tauri:build
+```
+
+The setup executable and its bundled files are written to `src-tauri/target/release/bundle/nsis`. To build only the unpackaged executable, use `npm run tauri:build:binary`.
 
 ## Controls
 
@@ -84,8 +108,8 @@ npm run build
 npm run tauri:build
 ```
 
-`npm run tauri:build` creates the native executable without packaging an installer. The selected design, implementation evidence, and QA report live under [`docs/design`](docs/design) and [`design-qa.md`](design-qa.md).
+`npm run tauri:build` creates the Windows NSIS setup executable. On every push, GitHub Actions runs the frontend and Rust checks, builds that installer, generates a SHA-256 checksum, and keeps both as a downloadable artifact for 14 days. The selected design, implementation evidence, and QA report live under [`docs/design`](docs/design) and [`design-qa.md`](design-qa.md).
 
 ## Next stage
 
-The next release is intentionally undecided. Candidate workflows include richer rig setup, real mesh/weight editing, or rendered sprite-sheet export; the choice should follow hands-on feedback from v0.1.0.
+The next feature release is intentionally undecided. Candidate workflows include richer rig setup, real mesh/weight editing, or rendered sprite-sheet export; the choice should follow hands-on feedback from the current v0.x build.

@@ -2,6 +2,19 @@
 
 All notable changes to Graphite Forge are documented here.
 
+## [0.2.0] - 2026-07-23
+
+### Added
+
+- Added a current-user Windows NSIS installer with Start menu and uninstall integration.
+- Embedded the Microsoft WebView2 bootstrapper for more dependable first-time installation.
+- Added a GitHub Actions workflow that verifies the frontend and Rust code, packages every push, creates a SHA-256 checksum, and publishes both as a downloadable artifact.
+
+### Changed
+
+- Made `npm run tauri:build` create the installable Windows setup executable; the unpackaged build remains available through `npm run tauri:build:binary`.
+- Blocked installer downgrades so older builds cannot replace newer installed versions.
+
 ## [0.1.3] - 2026-07-22
 
 ### Fixed
