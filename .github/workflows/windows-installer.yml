@@ -40,6 +40,9 @@ jobs:
       - name: Verify frontend
         run: npm run check
 
+      - name: Build static preview
+        run: npm run build
+
       - name: Verify static preview worker
         run: npm run test:sites
 

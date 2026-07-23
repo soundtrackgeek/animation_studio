@@ -2,6 +2,12 @@
 
 All notable changes to Graphite Forge are documented here.
 
+## [0.2.1] - 2026-07-23
+
+### Fixed
+
+- Built the static preview output before testing it so the Windows Installer workflow also passes on a clean GitHub runner.
+
 ## [0.2.0] - 2026-07-23
 
 ### Added
