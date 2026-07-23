@@ -48,7 +48,9 @@ Then open `http://127.0.0.1:1420`.
 
 ## Install the Windows app
 
-Every push is verified and packaged by the **Windows Installer** workflow in GitHub Actions. Open the latest successful workflow run, download the `graphite-forge-windows-...` artifact, unzip it, and run the included `Graphite Forge_..._x64-setup.exe`.
+Download the latest version from [GitHub Releases](https://github.com/soundtrackgeek/animation_studio/releases/latest), then run the attached `Graphite Forge_..._x64-setup.exe`. The adjacent `.sha256` file can be used to verify the download.
+
+Every branch push is also verified and packaged by the **Windows Installer** workflow in GitHub Actions. Those temporary workflow artifacts are useful for development builds; pushing a matching `vMAJOR.MINOR.PATCH` tag publishes the verified installer and checksum as a durable GitHub Release.
 
 The installer:
 
@@ -67,6 +69,16 @@ npm run tauri:build
 ```
 
 The setup executable and its bundled files are written to `src-tauri/target/release/bundle/nsis`. To build only the unpackaged executable, use `npm run tauri:build:binary`.
+
+To publish a version after its version files and changelog are updated and committed:
+
+```powershell
+$version = (Get-Content package.json | ConvertFrom-Json).version
+git tag -a "v$version" -m "Graphite Forge v$version"
+git push origin "v$version"
+```
+
+The workflow rejects a release tag that does not match the application version.
 
 ## Controls
 
@@ -108,7 +120,7 @@ npm run build
 npm run tauri:build
 ```
 
-`npm run tauri:build` creates the Windows NSIS setup executable. On every push, GitHub Actions runs the frontend and Rust checks, builds that installer, generates a SHA-256 checksum, and keeps both as a downloadable artifact for 14 days. The selected design, implementation evidence, and QA report live under [`docs/design`](docs/design) and [`design-qa.md`](design-qa.md).
+`npm run tauri:build` creates the Windows NSIS setup executable. On every push, GitHub Actions runs the frontend and Rust checks, builds that installer, generates a SHA-256 checksum, and keeps both as a downloadable artifact for 14 days. Version tags additionally publish those verified files under GitHub Releases. The selected design, implementation evidence, and QA report live under [`docs/design`](docs/design) and [`design-qa.md`](design-qa.md).
 
 ## Next stage
 

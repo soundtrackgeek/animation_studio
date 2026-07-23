@@ -2,6 +2,17 @@
 
 All notable changes to Graphite Forge are documented here.
 
+## [0.2.2] - 2026-07-23
+
+### Added
+
+- Published verified Windows installers and SHA-256 checksums as durable GitHub Releases when a matching `vMAJOR.MINOR.PATCH` tag is pushed.
+- Added a release guard that rejects tags which do not match the application version.
+
+### Changed
+
+- Directed regular users to GitHub Releases while retaining temporary Actions artifacts for every development push.
+
 ## [0.2.1] - 2026-07-23
 
 ### Fixed
