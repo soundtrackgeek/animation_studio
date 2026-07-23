@@ -5,10 +5,13 @@ import { MagnifyingGlassPlus } from "@phosphor-icons/react/MagnifyingGlassPlus";
 import type { Dispatch, PointerEvent as ReactPointerEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { findBoneAtPoint } from "../studio/hitTest";
+import type { EvaluatedPose } from "../studio/pose";
 import type { BoneNode, StudioAction, StudioState } from "../studio/types";
 
 interface StudioCanvasProps {
   state: StudioState;
+  pose: EvaluatedPose;
+  restPose: EvaluatedPose;
   dispatch: Dispatch<StudioAction>;
 }
 
@@ -93,7 +96,7 @@ function boneColor(bone: BoneNode): string {
   return bone.side === "near" ? NEAR : bone.side === "far" ? FAR : CENTER;
 }
 
-export function StudioCanvas({ state, dispatch }: StudioCanvasProps) {
+export function StudioCanvas({ state, pose, restPose, dispatch }: StudioCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const spriteRef = useRef<PreparedSprite | null>(null);
@@ -166,17 +169,47 @@ export function StudioCanvas({ state, dispatch }: StudioCanvasProps) {
     const positions = new Map<string, { x: number; y: number }>();
     for (const bone of state.project.bones) {
       const stress = state.stressTest && ["forearm-near", "shin-near", "foot-ik-near"].includes(bone.id) ? Math.sin(elapsed) * 0.035 : 0;
+      const evaluated = pose.get(bone.id);
+      if (!evaluated) continue;
       positions.set(bone.id, {
-        x: drawRect.x + (bone.x + stress) * drawRect.width,
-        y: drawRect.y + bone.y * drawRect.height,
+        x: drawRect.x + (evaluated.x + stress) * drawRect.width,
+        y: drawRect.y + evaluated.y * drawRect.height,
       });
     }
 
     context.lineCap = "round";
     context.lineJoin = "round";
+    if (state.mode === "animate") {
+      context.save();
+      context.setLineDash([3, 4]);
+      context.strokeStyle = "rgba(154, 174, 183, 0.2)";
+      context.fillStyle = "rgba(154, 174, 183, 0.18)";
+      for (const bone of state.project.bones) {
+        const rest = restPose.get(bone.id);
+        const parentRest = bone.parentId ? restPose.get(bone.parentId) : undefined;
+        if (!rest) continue;
+        const restX = drawRect.x + rest.x * drawRect.width;
+        const restY = drawRect.y + rest.y * drawRect.height;
+        if (parentRest) {
+          context.beginPath();
+          context.moveTo(
+            drawRect.x + parentRest.x * drawRect.width,
+            drawRect.y + parentRest.y * drawRect.height,
+          );
+          context.lineTo(restX, restY);
+          context.stroke();
+        }
+        context.beginPath();
+        context.arc(restX, restY, 3, 0, Math.PI * 2);
+        context.fill();
+      }
+      context.restore();
+    }
+
     for (const bone of state.project.bones) {
-      const point = positions.get(bone.id)!;
+      const point = positions.get(bone.id);
       const parent = bone.parentId ? positions.get(bone.parentId) : undefined;
+      if (!point) continue;
       const color = boneColor(bone);
       if (parent) {
         context.strokeStyle = "rgba(7, 12, 15, 0.88)";
@@ -209,7 +242,16 @@ export function StudioCanvas({ state, dispatch }: StudioCanvasProps) {
       }
     }
 
-  }, [state.mode, state.project.bones, state.project.sprite.renderProfile, state.selectedBoneId, state.stressTest, state.zoom]);
+  }, [
+    pose,
+    restPose,
+    state.mode,
+    state.project.bones,
+    state.project.sprite.renderProfile,
+    state.selectedBoneId,
+    state.stressTest,
+    state.zoom,
+  ]);
 
   useEffect(() => {
     draw();
@@ -230,7 +272,11 @@ export function StudioCanvas({ state, dispatch }: StudioCanvasProps) {
   }, [draw, state.stressTest]);
 
   const findBone = (x: number, y: number): string | null => {
-    return findBoneAtPoint(state.project.bones, state.selectedBoneId, drawRectRef.current, x, y);
+    const posedBones = state.project.bones.map((bone) => {
+      const evaluated = pose.get(bone.id);
+      return evaluated ? { ...bone, x: evaluated.x, y: evaluated.y } : bone;
+    });
+    return findBoneAtPoint(posedBones, state.selectedBoneId, drawRectRef.current, x, y);
   };
 
   const eventPoint = (event: ReactPointerEvent<HTMLCanvasElement>) => {
@@ -274,6 +320,11 @@ export function StudioCanvas({ state, dispatch }: StudioCanvasProps) {
         aria-label="Interactive character rig viewport"
       />
       {loading ? <div className="canvas-loading">Preparing artwork…</div> : null}
+      {state.mode === "animate" ? (
+        <div className={`pose-status ${state.isPlaying ? "playing" : ""}`}>
+          <span /> {state.isPlaying ? "Playing evaluated pose" : `Evaluated pose · frame ${state.currentFrame}`}
+        </div>
+      ) : null}
       <div className="viewport-controls">
         <button type="button" aria-label="Toggle grid"><GridFour /></button>
         <button type="button" aria-label="Frame all"><CornersOut /></button>

@@ -2,6 +2,23 @@
 
 All notable changes to Graphite Forge are documented here.
 
+## [0.4.0] - 2026-07-23
+
+### Added
+
+- Added a real pose evaluator with hierarchical parent-child transforms and shortest-path rotation interpolation.
+- Added Linear, eased Bezier, and Stepped keyframe sampling.
+- Added two-bone leg IK that preserves upper- and lower-leg lengths while following the foot controls.
+- Added transient pose previews for manual keying, editable interpolation, current-key deletion, rest-pose ghosting, and a live evaluated-pose indicator.
+- Added automatic migration from the v0.1 project and local-recovery format to schema v0.2.
+- Added focused pose, hierarchy, IK, migration, playback, and animation-state tests.
+
+### Changed
+
+- Made timeline scrubbing and playback evaluate actual animation poses.
+- Kept Animate edits separate from the Rig rest pose; Auto Key now writes animation data without reshaping the saved skeleton.
+- Made the timeline loop control functional and stabilized playback around reducer-driven frame advancement.
+
 ## [0.3.0] - 2026-07-23
 
 ### Added

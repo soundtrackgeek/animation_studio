@@ -504,6 +504,51 @@ button.tree-row:hover {
   background: rgba(15, 23, 28, 0.72);
 }
 
+.pose-status {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 9px;
+  border: 1px solid #2d5660;
+  border-radius: 4px;
+  color: #8fb6be;
+  background: rgba(13, 26, 31, 0.88);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.pose-status span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(47, 195, 211, 0.12);
+}
+
+.pose-status.playing {
+  color: #b7efe2;
+  border-color: #347062;
+}
+
+.pose-status.playing span {
+  background: var(--success);
+  animation: pose-pulse 900ms ease-in-out infinite alternate;
+}
+
+@keyframes pose-pulse {
+  to {
+    opacity: 0.42;
+    transform: scale(0.72);
+  }
+}
+
 .viewport-controls {
   position: absolute;
   right: 12px;
@@ -708,6 +753,11 @@ button.tree-row:hover {
   background: #0f161a;
   color: #c6d2d7;
   font-size: 11px;
+}
+
+.property-row select:disabled {
+  color: #63747b;
+  opacity: 0.68;
 }
 
 .xy-fields {
@@ -1173,6 +1223,17 @@ button.tree-row:hover {
 .key-status.saved span {
   background: var(--success);
   box-shadow: 0 0 0 3px rgba(93, 210, 168, 0.12);
+}
+
+.key-status.preview {
+  border-color: #745b33;
+  color: #e7cb9e;
+  background: #282014;
+}
+
+.key-status.preview span {
+  background: #e5a54c;
+  box-shadow: 0 0 0 3px rgba(229, 165, 76, 0.12);
 }
 
 .timeline-footer {

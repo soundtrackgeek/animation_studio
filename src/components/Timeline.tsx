@@ -90,12 +90,19 @@ export function Timeline({ state, dispatch }: TimelineProps) {
         <button type="button" aria-label="Duplicate clip"><Copy /></button>
         <button type="button" aria-label="Delete clip"><Trash /></button>
         <div className="playback-controls">
-          <button type="button" onClick={() => dispatch({ type: "set_frame", frame: 0 })}><SkipBack /></button>
-          <button type="button" onClick={() => dispatch({ type: "set_frame", frame: state.currentFrame - 1 })}><CaretLeft /></button>
-          <button type="button" className="play" onClick={() => dispatch({ type: "set_playing", playing: !state.isPlaying })}>{state.isPlaying ? <Pause weight="fill" /> : <Play weight="fill" />}</button>
-          <button type="button" onClick={() => dispatch({ type: "set_frame", frame: state.currentFrame + 1 })}><CaretRight /></button>
-          <button type="button" onClick={() => dispatch({ type: "set_frame", frame: clip.duration })}><SkipForward /></button>
-          <button type="button" className={clip.loop ? "loop active" : "loop"}><Repeat /></button>
+          <button type="button" aria-label="First frame" onClick={() => dispatch({ type: "set_frame", frame: 0 })}><SkipBack /></button>
+          <button type="button" aria-label="Previous frame" onClick={() => dispatch({ type: "set_frame", frame: state.currentFrame - 1 })}><CaretLeft /></button>
+          <button type="button" aria-label={state.isPlaying ? "Pause animation" : "Play animation"} className="play" onClick={() => dispatch({ type: "set_playing", playing: !state.isPlaying })}>{state.isPlaying ? <Pause weight="fill" /> : <Play weight="fill" />}</button>
+          <button type="button" aria-label="Next frame" onClick={() => dispatch({ type: "set_frame", frame: state.currentFrame + 1 })}><CaretRight /></button>
+          <button type="button" aria-label="Last frame" onClick={() => dispatch({ type: "set_frame", frame: clip.duration })}><SkipForward /></button>
+          <button
+            type="button"
+            aria-label={clip.loop ? "Disable loop" : "Enable loop"}
+            className={clip.loop ? "loop active" : "loop"}
+            onClick={() => dispatch({ type: "toggle_loop" })}
+          >
+            <Repeat />
+          </button>
         </div>
         <div className="timeline-meta"><span>{state.currentFrame} / {clip.duration}</span><span>{clip.fps} FPS</span></div>
       </footer>

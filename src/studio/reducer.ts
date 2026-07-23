@@ -1,20 +1,19 @@
 import { createDefaultProject } from "./data";
-import type { BoneNode, Keyframe, StudioAction, StudioProject, StudioState } from "./types";
+import { evaluateStudioPose, sampleBoneTransform } from "./pose";
+import { loadRecoveredProject } from "./project";
+import type {
+  BoneNode,
+  BoneTransform,
+  Keyframe,
+  StudioAction,
+  StudioProject,
+  StudioState,
+} from "./types";
 
-export const STORAGE_KEY = "graphite-forge:project:v0.1.0";
+export { STORAGE_KEY } from "./project";
 
 export function createInitialState(): StudioState {
-  let project = createDefaultProject();
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved) as StudioProject;
-      if (parsed.schemaVersion === "0.1.0") project = parsed;
-    }
-  } catch {
-    // A damaged recovery entry should never prevent the editor from opening.
-  }
-
+  const project = loadRecoveredProject(createDefaultProject());
   return {
     project,
     mode: "rig",
@@ -27,13 +26,24 @@ export function createInitialState(): StudioState {
     stressTest: false,
     projectMenuOpen: false,
     notice: null,
+    draftPose: {},
   };
 }
+
 function updatedProject(project: StudioProject, patch: Partial<StudioProject>): StudioProject {
   return { ...project, ...patch, updatedAt: new Date().toISOString() };
 }
 
-function recordKeyframe(state: StudioState, bone: BoneNode): StudioProject {
+function withoutDraft(state: StudioState, boneId: string): StudioState["draftPose"] {
+  const { [boneId]: _, ...remaining } = state.draftPose;
+  return remaining;
+}
+
+function recordKeyframe(
+  state: StudioState,
+  bone: BoneNode,
+  transform: BoneTransform,
+): StudioProject {
   const clip = state.project.clips[0];
   const currentKey = clip.keyframes.find(
     (keyframe) => keyframe.boneId === bone.id && keyframe.frame === state.currentFrame,
@@ -42,9 +52,9 @@ function recordKeyframe(state: StudioState, bone: BoneNode): StudioProject {
     id: currentKey?.id ?? `key-${bone.id}-${state.currentFrame}-${Date.now()}`,
     boneId: bone.id,
     frame: state.currentFrame,
-    x: bone.x,
-    y: bone.y,
-    rotation: bone.rotation,
+    x: transform.x,
+    y: transform.y,
+    rotation: transform.rotation,
     interpolation: currentKey?.interpolation ?? "bezier",
   };
   const keyframes = currentKey
@@ -55,21 +65,62 @@ function recordKeyframe(state: StudioState, bone: BoneNode): StudioProject {
   });
 }
 
-function changeBone(
+function changeRestBone(
   state: StudioState,
   boneId: string,
   change: (bone: BoneNode) => BoneNode,
-  shouldRecord: boolean,
 ): StudioState {
-  const bones = state.project.bones.map((bone) => (bone.id === boneId ? change(bone) : bone));
-  const project = updatedProject(state.project, { bones });
-  if (!shouldRecord) return { ...state, project };
-  const changedBone = bones.find((bone) => bone.id === boneId)!;
   return {
     ...state,
-    project: recordKeyframe({ ...state, project }, changedBone),
-    notice: `Auto Key saved · ${changedBone.name} · frame ${state.currentFrame}`,
+    project: updatedProject(state.project, {
+      bones: state.project.bones.map((bone) => (bone.id === boneId ? change(bone) : bone)),
+    }),
   };
+}
+
+function animationTransform(state: StudioState, bone: BoneNode): BoneTransform {
+  return state.draftPose[bone.id]
+    ?? sampleBoneTransform(state.project, bone, state.currentFrame);
+}
+
+function previewOrRecord(
+  state: StudioState,
+  bone: BoneNode,
+  transform: BoneTransform,
+): StudioState {
+  if (!state.autoKey) {
+    return {
+      ...state,
+      draftPose: { ...state.draftPose, [bone.id]: transform },
+      notice: `Pose preview · ${bone.name} · set a key to save`,
+    };
+  }
+  return {
+    ...state,
+    project: recordKeyframe(state, bone, transform),
+    draftPose: withoutDraft(state, bone.id),
+    notice: `Auto Key saved · ${bone.name} · frame ${state.currentFrame}`,
+  };
+}
+
+function moveAnimatedBone(
+  state: StudioState,
+  bone: BoneNode,
+  x: number,
+  y: number,
+): StudioState {
+  const pose = evaluateStudioPose(state.project, state.currentFrame, state.draftPose, {
+    animate: true,
+    applyIk: true,
+  });
+  const evaluated = pose.get(bone.id);
+  if (!evaluated) return state;
+  const current = animationTransform(state, bone);
+  return previewOrRecord(state, bone, {
+    ...current,
+    x: current.x + x - evaluated.x,
+    y: current.y + y - evaluated.y,
+  });
 }
 
 export function studioReducer(state: StudioState, action: StudioAction): StudioState {
@@ -80,31 +131,77 @@ export function studioReducer(state: StudioState, action: StudioAction): StudioS
         mode: action.mode,
         autoKey: action.mode === "animate" ? state.autoKey : false,
         stressTest: action.mode === "rig" ? state.stressTest : false,
+        isPlaying: action.mode === "animate" ? state.isPlaying : false,
+        draftPose: {},
       };
     case "set_tool":
       return { ...state, tool: action.tool };
     case "select_bone":
       return { ...state, selectedBoneId: action.boneId };
-    case "move_bone":
-      return changeBone(
+    case "move_bone": {
+      const bone = state.project.bones.find((item) => item.id === action.boneId);
+      if (!bone) return state;
+      if (state.mode === "animate") {
+        return moveAnimatedBone(state, bone, action.x, action.y);
+      }
+      return changeRestBone(
         state,
         action.boneId,
-        (bone) => ({ ...bone, x: action.x, y: action.y }),
-        state.mode === "animate" && state.autoKey,
+        (current) => ({ ...current, x: action.x, y: action.y }),
       );
-    case "rotate_bone":
-      return changeBone(
+    }
+    case "rotate_bone": {
+      const bone = state.project.bones.find((item) => item.id === action.boneId);
+      if (!bone) return state;
+      if (state.mode === "animate") {
+        return previewOrRecord(state, bone, {
+          ...animationTransform(state, bone),
+          rotation: action.rotation,
+        });
+      }
+      return changeRestBone(
         state,
         action.boneId,
-        (bone) => ({ ...bone, rotation: action.rotation }),
-        state.mode === "animate" && state.autoKey,
+        (current) => ({ ...current, rotation: action.rotation }),
       );
+    }
     case "set_frame":
-      return { ...state, currentFrame: Math.max(0, Math.min(state.project.clips[0].duration, action.frame)) };
+      return {
+        ...state,
+        currentFrame: Math.max(0, Math.min(state.project.clips[0].duration, action.frame)),
+        draftPose: {},
+      };
+    case "advance_frame": {
+      const clip = state.project.clips[0];
+      if (state.currentFrame < clip.duration) {
+        return { ...state, currentFrame: state.currentFrame + 1, draftPose: {} };
+      }
+      return clip.loop
+        ? { ...state, currentFrame: 0, draftPose: {} }
+        : { ...state, currentFrame: clip.duration, isPlaying: false, draftPose: {} };
+    }
     case "set_playing":
-      return { ...state, isPlaying: action.playing };
+      return {
+        ...state,
+        isPlaying: action.playing,
+        currentFrame: action.playing && state.currentFrame >= state.project.clips[0].duration
+          ? 0
+          : state.currentFrame,
+        draftPose: {},
+      };
+    case "toggle_loop":
+      return {
+        ...state,
+        project: updatedProject(state.project, {
+          clips: state.project.clips.map((clip, index) => (
+            index === 0 ? { ...clip, loop: !clip.loop } : clip
+          )),
+        }),
+      };
     case "toggle_auto_key":
-      return state.mode === "animate" ? { ...state, autoKey: !state.autoKey } : { ...state, autoKey: false };
+      return state.mode === "animate"
+        ? { ...state, autoKey: !state.autoKey }
+        : { ...state, autoKey: false };
     case "set_zoom":
       return { ...state, zoom: Math.max(0.35, Math.min(1.4, action.zoom)) };
     case "set_stress_test":
@@ -115,8 +212,12 @@ export function studioReducer(state: StudioState, action: StudioAction): StudioS
       return {
         ...state,
         project: action.project,
-        selectedBoneId: action.project.bones.some((bone) => bone.id === "foot-ik-near") ? "foot-ik-near" : action.project.bones[0]?.id ?? "",
+        selectedBoneId: action.project.bones.some((bone) => bone.id === "foot-ik-near")
+          ? "foot-ik-near"
+          : action.project.bones[0]?.id ?? "",
         currentFrame: 0,
+        isPlaying: false,
+        draftPose: {},
         projectMenuOpen: false,
         notice: action.notice ?? "Project opened",
       };
@@ -125,19 +226,26 @@ export function studioReducer(state: StudioState, action: StudioAction): StudioS
         ...state,
         project: updatedProject(state.project, { name: action.projectName, sprite: action.sprite }),
         mode: "prepare",
+        isPlaying: false,
+        draftPose: {},
         projectMenuOpen: false,
         notice: "Artwork imported. Review the isolation before rigging.",
       };
     case "set_render_profile":
       return {
         ...state,
-        project: updatedProject(state.project, { sprite: { ...state.project.sprite, renderProfile: action.profile } }),
+        project: updatedProject(state.project, {
+          sprite: { ...state.project.sprite, renderProfile: action.profile },
+        }),
       };
     case "toggle_background_removal":
       return {
         ...state,
         project: updatedProject(state.project, {
-          sprite: { ...state.project.sprite, removeBackground: !state.project.sprite.removeBackground },
+          sprite: {
+            ...state.project.sprite,
+            removeBackground: !state.project.sprite.removeBackground,
+          },
         }),
       };
     case "toggle_constraint":
@@ -145,13 +253,22 @@ export function studioReducer(state: StudioState, action: StudioAction): StudioS
         ...state,
         project: updatedProject(state.project, {
           constraints: state.project.constraints.map((constraint) =>
-            constraint.id === action.constraintId ? { ...constraint, enabled: !constraint.enabled } : constraint,
+            constraint.id === action.constraintId
+              ? { ...constraint, enabled: !constraint.enabled }
+              : constraint,
           ),
         }),
       };
     case "add_key": {
       const bone = state.project.bones.find((item) => item.id === action.boneId);
-      return bone ? { ...state, project: recordKeyframe(state, bone), notice: `Keyed ${bone.name} at frame ${state.currentFrame}` } : state;
+      if (!bone) return state;
+      const transform = animationTransform(state, bone);
+      return {
+        ...state,
+        project: recordKeyframe(state, bone, transform),
+        draftPose: withoutDraft(state, bone.id),
+        notice: `Keyed ${bone.name} at frame ${state.currentFrame}`,
+      };
     }
     case "delete_key":
       return {
@@ -160,6 +277,20 @@ export function studioReducer(state: StudioState, action: StudioAction): StudioS
           clips: state.project.clips.map((clip) => ({
             ...clip,
             keyframes: clip.keyframes.filter((keyframe) => keyframe.id !== action.keyId),
+          })),
+        }),
+      };
+    case "set_key_interpolation":
+      return {
+        ...state,
+        project: updatedProject(state.project, {
+          clips: state.project.clips.map((clip) => ({
+            ...clip,
+            keyframes: clip.keyframes.map((keyframe) => (
+              keyframe.id === action.keyId
+                ? { ...keyframe, interpolation: action.interpolation }
+                : keyframe
+            )),
           })),
         }),
       };

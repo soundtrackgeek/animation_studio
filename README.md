@@ -12,7 +12,9 @@ Graphite Forge is a focused desktop studio for fitting a side-view 2D sprite to 
 - Hierarchy selection and direct joint dragging on the canvas
 - Near- and far-side bones plus hand and foot IK targets
 - Prepare, Rig, Animate, and Export workspaces
-- One Walk clip with key markers, frame stepping, playback, Auto Key, and a range test
+- One Walk clip with evaluated poses, hierarchical transforms, frame stepping, looping playback, Auto Key, and a range test
+- Linear, eased Bezier, and Stepped key interpolation with shortest-path rotation sampling
+- Working two-bone leg IK driven by the existing foot controls
 - Native `.gforge` project open/save and JSON metadata export through Tauri
 - Automatic signed update checks with an in-app download, install, and restart flow
 - Browser fallbacks for previewing the interface without the desktop shell
@@ -113,7 +115,7 @@ The workflow rejects a release tag that does not match the application version.
 | `E` | Rotate tool |
 | `B` | Bone tool |
 | `K` | Keyframe tool |
-| Drag a joint | Reposition the selected rig joint; Auto Key records the active animation frame |
+| Drag a joint | Reposition a Rig joint or edit the evaluated pose in Animate |
 | `Space` | Play or pause the active clip |
 | Left / Right arrow | Step one frame |
 | `Ctrl+S` | Save the project |
@@ -126,13 +128,23 @@ The workflow rejects a release tag that does not match the application version.
 4. Drag the selected joint or IK target in the viewport.
 5. Confirm the green **Key saved** state in the inspector and the enlarged amber key marker on the active frame. A short Auto Key confirmation also appears after the edit.
 
-Auto Key is available only in **Animate**. Moving joints in **Rig** edits the rest pose and does not create animation keys; leaving Animate automatically turns Auto Key off.
+With Auto Key off, a transform edit becomes an amber **Pose preview**; choose **Set key** to save it. Select an existing key to change its interpolation or delete it.
+
+Auto Key is available only in **Animate**. Moving joints in **Rig** edits the rest pose and does not create animation keys; leaving Animate automatically turns Auto Key off. The faint skeleton in Animate shows the untouched rest pose while the colored skeleton shows the evaluated animation pose.
+
+### Pose playback and IK
+
+- Scrubbing or playing the timeline evaluates the current bone transforms instead of changing the Rig rest pose.
+- Child bones inherit parent rotation and movement.
+- Rotation follows the shortest path between keys.
+- Dragging an enabled foot IK target in Rig solves its thigh and shin chain while preserving both segment lengths.
+- Existing v0.1 project files and local recovery data are migrated to the v0.2 project schema when opened.
 
 ## Project data
 
 - `.gforge` stores the editable Graphite Forge project as versioned JSON.
 - JSON export writes engine-friendly rig, pose, and clip metadata.
-- Rendered sprite-sheet export is visible as a future option but disabled in v0.1.0.
+- Rendered sprite-sheet export is visible as a future option but is not available yet.
 
 ## Verify and build
 
@@ -149,4 +161,4 @@ npm run tauri:build
 
 ## Next stage
 
-The next feature release is intentionally undecided. Candidate workflows include richer rig setup, real mesh/weight editing, or rendered sprite-sheet export; the choice should follow hands-on feedback from the current v0.x build.
+The likely next vertical slice is binding simple cutout artwork attachments to bones so the evaluated v0.4 pose moves the character artwork. Mesh deformation, weight painting, and rendered sprite-sheet export remain later stages.

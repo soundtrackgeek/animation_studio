@@ -10,7 +10,7 @@ describe("UpdateCenter", () => {
       automaticChecks: false,
       intervalMinutes: 5,
     }));
-    window.history.replaceState({}, "", "/?mock-update=0.3.1");
+    window.history.replaceState({}, "", "/?mock-update=0.4.1");
   });
 
   afterEach(() => {
@@ -25,7 +25,7 @@ describe("UpdateCenter", () => {
 
     render(<UpdateCenter settingsOpen={false} onCloseSettings={() => undefined} />);
 
-    expect(await screen.findByText("Version 0.3.1 is ready")).toBeTruthy();
+    expect(await screen.findByText("Version 0.4.1 is ready")).toBeTruthy();
     expect(intervalSpy).toHaveBeenCalledWith(expect.any(Function), 300_000);
   });
 
@@ -33,7 +33,7 @@ describe("UpdateCenter", () => {
     render(<UpdateCenter settingsOpen onCloseSettings={() => undefined} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Check for updates" }));
-    expect(await screen.findByText("Version 0.3.1 is ready")).toBeTruthy();
+    expect(await screen.findByText("Version 0.4.1 is ready")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Update & restart" }));
     expect(await screen.findByRole("progressbar", { name: "Update progress" })).toBeTruthy();

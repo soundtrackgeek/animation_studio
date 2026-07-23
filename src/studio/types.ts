@@ -31,6 +31,8 @@ export interface RigConstraint {
   type: "two-bone-ik" | "pin" | "stretch";
   softness: number;
   mix: number;
+  targetOffsetX?: number;
+  targetOffsetY?: number;
 }
 
 export interface Keyframe {
@@ -43,6 +45,14 @@ export interface Keyframe {
   interpolation: "linear" | "bezier" | "stepped";
 }
 
+export interface BoneTransform {
+  x: number;
+  y: number;
+  rotation: number;
+}
+
+export type DraftPose = Record<string, BoneTransform>;
+
 export interface AnimationClip {
   id: string;
   name: string;
@@ -53,7 +63,7 @@ export interface AnimationClip {
 }
 
 export interface StudioProject {
-  schemaVersion: "0.1.0";
+  schemaVersion: "0.2.0";
   name: string;
   createdAt: string;
   updatedAt: string;
@@ -76,6 +86,7 @@ export interface StudioState {
   stressTest: boolean;
   projectMenuOpen: boolean;
   notice: string | null;
+  draftPose: DraftPose;
 }
 
 export type StudioAction =
@@ -85,7 +96,9 @@ export type StudioAction =
   | { type: "move_bone"; boneId: string; x: number; y: number }
   | { type: "rotate_bone"; boneId: string; rotation: number }
   | { type: "set_frame"; frame: number }
+  | { type: "advance_frame" }
   | { type: "set_playing"; playing: boolean }
+  | { type: "toggle_loop" }
   | { type: "toggle_auto_key" }
   | { type: "set_zoom"; zoom: number }
   | { type: "set_stress_test"; enabled: boolean }
@@ -97,4 +110,5 @@ export type StudioAction =
   | { type: "toggle_constraint"; constraintId: string }
   | { type: "add_key"; boneId: string }
   | { type: "delete_key"; keyId: string }
+  | { type: "set_key_interpolation"; keyId: string; interpolation: Keyframe["interpolation"] }
   | { type: "set_notice"; notice: string | null };

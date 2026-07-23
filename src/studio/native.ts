@@ -1,4 +1,5 @@
 import type { StudioProject } from "./types";
+import { migrateStudioProject } from "./project";
 
 interface ImportedImage {
   dataUrl: string;
@@ -79,9 +80,7 @@ export async function openProject(): Promise<StudioProject | null> {
     contents = await file.text();
   }
 
-  const project = JSON.parse(contents) as StudioProject;
-  if (project.schemaVersion !== "0.1.0") throw new Error("Unsupported project version");
-  return project;
+  return migrateStudioProject(JSON.parse(contents));
 }
 
 export async function saveProject(project: StudioProject): Promise<boolean> {

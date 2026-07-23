@@ -25,13 +25,11 @@ function App() {
 
   useEffect(() => {
     if (!state.isPlaying) return;
-    const clip = state.project.clips[0];
     const handle = window.setInterval(() => {
-      const nextFrame = state.currentFrame >= clip.duration ? 0 : state.currentFrame + 1;
-      dispatch({ type: "set_frame", frame: nextFrame });
-    }, 1000 / clip.fps);
+      dispatch({ type: "advance_frame" });
+    }, 1000 / state.project.clips[0].fps);
     return () => window.clearInterval(handle);
-  }, [state.currentFrame, state.isPlaying, state.project.clips]);
+  }, [state.isPlaying, state.project.clips[0].fps]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

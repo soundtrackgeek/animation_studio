@@ -7,11 +7,13 @@ import { Lightning } from "@phosphor-icons/react/Lightning";
 import { LockSimple } from "@phosphor-icons/react/LockSimple";
 import { Target } from "@phosphor-icons/react/Target";
 import type { Dispatch } from "react";
+import type { EvaluatedBonePose } from "../studio/pose";
 import type { BoneNode, StudioAction, StudioState } from "../studio/types";
 
 interface InspectorPanelProps {
   state: StudioState;
   selectedBone: BoneNode;
+  selectedPose?: EvaluatedBonePose;
   dispatch: Dispatch<StudioAction>;
   onExport: () => void;
 }
@@ -83,7 +85,7 @@ function ExportInspector({ state, onExport }: Pick<InspectorPanelProps, "state" 
   );
 }
 
-export function InspectorPanel({ state, selectedBone, dispatch, onExport }: InspectorPanelProps) {
+export function InspectorPanel({ state, selectedBone, selectedPose, dispatch, onExport }: InspectorPanelProps) {
   if (state.mode === "prepare") return <aside className="inspector-panel"><PrepareInspector state={state} dispatch={dispatch} /><RecentProject state={state} /></aside>;
   if (state.mode === "export") return <aside className="inspector-panel"><ExportInspector state={state} onExport={onExport} /><RecentProject state={state} /></aside>;
 
@@ -92,6 +94,8 @@ export function InspectorPanel({ state, selectedBone, dispatch, onExport }: Insp
   const currentKey = state.project.clips[0].keyframes.find(
     (keyframe) => keyframe.boneId === selectedBone.id && keyframe.frame === state.currentFrame,
   );
+  const displayedTransform = animateMode && selectedPose ? selectedPose : selectedBone;
+  const hasDraft = Boolean(state.draftPose[selectedBone.id]);
   return (
     <aside className="inspector-panel">
       <div className="inspector-title">
@@ -103,11 +107,11 @@ export function InspectorPanel({ state, selectedBone, dispatch, onExport }: Insp
         <h3>Transform</h3>
         <div className="xy-fields">
           <span>Position</span><small>X</small>
-          <NumberField value={selectedBone.x * 100} onChange={(x) => dispatch({ type: "move_bone", boneId: selectedBone.id, x: x / 100, y: selectedBone.y })} />
+          <NumberField value={displayedTransform.x * 100} onChange={(x) => dispatch({ type: "move_bone", boneId: selectedBone.id, x: x / 100, y: displayedTransform.y })} />
           <small>Y</small>
-          <NumberField value={selectedBone.y * 100} onChange={(y) => dispatch({ type: "move_bone", boneId: selectedBone.id, x: selectedBone.x, y: y / 100 })} />
+          <NumberField value={displayedTransform.y * 100} onChange={(y) => dispatch({ type: "move_bone", boneId: selectedBone.id, x: displayedTransform.x, y: y / 100 })} />
         </div>
-        <div className="property-row"><span>Rotation</span><NumberField value={selectedBone.rotation} suffix="°" step={1} onChange={(rotation) => dispatch({ type: "rotate_bone", boneId: selectedBone.id, rotation })} /></div>
+        <div className="property-row"><span>Rotation</span><NumberField value={displayedTransform.rotation} suffix="°" step={1} onChange={(rotation) => dispatch({ type: "rotate_bone", boneId: selectedBone.id, rotation })} /></div>
         <div className="property-row"><span>Scale</span><NumberField value={1} step={0.01} onChange={() => undefined} /></div>
         <button className="secondary-action" type="button" onClick={() => dispatch({ type: "rotate_bone", boneId: selectedBone.id, rotation: 0 })}><ArrowClockwise /> Reset transform</button>
       </section>
@@ -115,12 +119,39 @@ export function InspectorPanel({ state, selectedBone, dispatch, onExport }: Insp
       {animateMode ? (
         <section className="inspector-section">
           <h3>Keyframe</h3>
-          <div className={`key-status ${currentKey ? "saved" : ""}`} aria-live="polite">
-            <span /> {currentKey ? `Key saved at frame ${state.currentFrame}` : `No key at frame ${state.currentFrame}`}
+          <div className={`key-status ${hasDraft ? "preview" : currentKey ? "saved" : ""}`} aria-live="polite">
+            <span /> {hasDraft
+              ? "Pose preview · not saved"
+              : currentKey
+                ? `Key saved at frame ${state.currentFrame}`
+                : `No key at frame ${state.currentFrame}`}
           </div>
           <div className="property-row"><span>Frame</span><NumberField value={state.currentFrame} step={1} onChange={(frame) => dispatch({ type: "set_frame", frame })} /></div>
-          <div className="property-row"><span>Interpolation</span><select defaultValue="bezier"><option>Bezier</option><option>Linear</option><option>Stepped</option></select></div>
+          <div className="property-row">
+            <span>Interpolation</span>
+            <select
+              value={currentKey?.interpolation ?? "bezier"}
+              disabled={!currentKey}
+              onChange={(event) => {
+                if (!currentKey) return;
+                dispatch({
+                  type: "set_key_interpolation",
+                  keyId: currentKey.id,
+                  interpolation: event.target.value as "bezier" | "linear" | "stepped",
+                });
+              }}
+            >
+              <option value="bezier">Bezier</option>
+              <option value="linear">Linear</option>
+              <option value="stepped">Stepped</option>
+            </select>
+          </div>
           <button className="primary-action compact" type="button" onClick={() => dispatch({ type: "add_key", boneId: selectedBone.id })}>{currentKey ? "Update" : "Set"} key at frame {state.currentFrame}</button>
+          {currentKey ? (
+            <button className="secondary-action" type="button" onClick={() => dispatch({ type: "delete_key", keyId: currentKey.id })}>
+              Delete key at frame {state.currentFrame}
+            </button>
+          ) : null}
         </section>
       ) : (
         <>

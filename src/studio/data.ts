@@ -28,8 +28,8 @@ export const DEFAULT_BONES: BoneNode[] = [
 
 export const DEFAULT_CONSTRAINTS: RigConstraint[] = [
   { id: "arm-parent", name: "Arm_Parent_Offset", targetBoneId: "arm-near", enabled: true, type: "stretch", softness: 0, mix: 0.8 },
-  { id: "foot-plant-left", name: "Foot_Plant_L", targetBoneId: "foot-ik-near", enabled: true, type: "two-bone-ik", softness: 0.05, mix: 1 },
-  { id: "foot-plant-right", name: "Foot_Plant_R", targetBoneId: "foot-ik-far", enabled: true, type: "two-bone-ik", softness: 0.05, mix: 1 },
+  { id: "foot-plant-left", name: "Foot_Plant_L", targetBoneId: "foot-ik-near", enabled: true, type: "two-bone-ik", softness: 0.05, mix: 1, targetOffsetX: 0.1, targetOffsetY: 0.03 },
+  { id: "foot-plant-right", name: "Foot_Plant_R", targetBoneId: "foot-ik-far", enabled: true, type: "two-bone-ik", softness: 0.05, mix: 1, targetOffsetX: 0.09, targetOffsetY: 0.03 },
   { id: "spine-stretch", name: "Spine_Stretch", targetBoneId: "spine", enabled: true, type: "stretch", softness: 0.08, mix: 0.65 },
   { id: "neck-aim", name: "Neck_Aim", targetBoneId: "neck", enabled: false, type: "pin", softness: 0.12, mix: 0.4 },
 ];
@@ -55,7 +55,7 @@ const WALK_KEYS: AnimationClip["keyframes"] = [
 export function createDefaultProject(now = new Date()): StudioProject {
   const timestamp = now.toISOString();
   return {
-    schemaVersion: "0.1.0",
+    schemaVersion: "0.2.0",
     name: "Stellar Merc",
     createdAt: timestamp,
     updatedAt: timestamp,
